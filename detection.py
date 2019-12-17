@@ -66,39 +66,15 @@ if __name__ == '__main__':
             bboxCounter = 0
             for bbox in new_bboxes:
                 rect_w = bbox[2] - bbox[0]
-                rect_w = rect_w.asscalar()
+                rect_w = rect_w.asscalar() #width
                 rect_h = bbox[3] - bbox[1]
-                rect_h = rect_h.asscalar()
+                rect_h = rect_h.asscalar() #height
                 x_coord = bbox[0]
-                x_coord = x_coord.asscalar()
+                x_coord = x_coord.asscalar() #left
                 y_coord = bbox[1]
-                y_coord = y_coord.asscalar()
+                y_coord = y_coord.asscalar() #bottom
                 #write to file
+                #frameN, bboxN, left, top, width, height
                 out_writer.writerow([frameCounter, bboxCounter, x_coord, y_coord, rect_w, rect_h])
                 bboxCounter += 1
             frameCounter += 1
-    '''
-    print(p_box_ids)
-    print(p_scores)
-    print(p_bboxes)
-    print('inference done')
-
-    #ax = utils.viz.plot_bbox(orig_img, p_bboxes, p_scores, p_box_ids, thresh=0.0, class_names=network.classes)
-    #plt.show()
-
-    im = Image.open(im_path)
-    imnp = np.array(im)
-
-    ax = plt.subplot()
-    ax.imshow(imnp)
-
-    new_bboxes = gluoncv.data.transforms.bbox.resize(p_bboxes, (WIDTH, HEIGHT), (ORIGINAL_WIDTH, ORIGINAL_HEIGHT))
-
-    for bbox in new_bboxes:
-        rect_w = bbox[2] - bbox[0]
-        rect_h = bbox[3] - bbox[1]
-        rect = patches.Rectangle((bbox[0].asscalar(), bbox[1].asscalar()), rect_w.asscalar(), rect_h.asscalar(), linewidth=1, edgecolor='r', facecolor='none')
-        ax.add_patch(rect)
-
-    plt.show()
-    '''
