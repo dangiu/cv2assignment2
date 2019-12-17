@@ -1,3 +1,8 @@
 #Pycharm environment and configuration
 .idea/
 venv/
+
+#Data
+Video.zip
+Video/
+bb_out.csv
