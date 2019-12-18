@@ -56,5 +56,41 @@ def showTracksOnImage(parsedTracks):
         cv.imshow('frame', frame)
         cv.waitKey(10)
 
+def outputDetections():
+    """
+    Create description.txt for delivery
+    :return:
+    """
+    input_file = 'bb_out.csv'
+    names = ['frame', 'bbox', 'left', 'top', 'width', 'height']
+    bb_data = pd.read_csv(input_file, header=None, names=names)
+    # pre-process bounding box data
+    bb_data['frame'] = bb_data['frame'] + 1  # shift frames to align with ground truth data
+    bb_data = bb_data.drop(['bbox'], 1)
+    bb_data.to_csv('detection.txt', header=False, index=False)
+
+def outputTracks(tracks):
+    """
+        Create tracking.txt for delivery by passing computed tracks (unparsed)
+        :return:
+    """
+    # parse tracks
+    frame_n = []
+    id = []
+    x_center = []
+    y_center = []
+    for t in tracks:
+        for bbox in t['bboxs']:
+            # frame, id, minx, miny, maxx, maxy
+            frame_n.append(bbox['frame'])
+            id.append(tracks.index(t))
+            x_center.append(bbox['left'] + (bbox['width'] / 2))
+            y_center.append(bbox['top'] + (bbox['height'] / 2))
+    d = {'frame': frame_n, 'id': id, 'x_center': x_center, 'y_center': y_center}
+    df = pd.DataFrame(data=d)
+    df = df.sort_values(by=['frame'])
+    # output to csv
+    df.to_csv('tracking.txt', header=False, index=False)
+
 if __name__ == '__main__':
-    showTracksOnImage(None, None)
+    outputDetections()

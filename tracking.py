@@ -15,8 +15,7 @@ input_file = 'bb_out.csv'
 names = ['frame', 'bbox', 'left', 'top', 'width', 'height']
 max_distance_thresh = 0.04
 max_reid_thresh = 0.7
-# 0.05 and 0.5 best after commit
-track_age_thresh = 16
+track_age_thresh = 25
 min_track_len = 14
 use_color_histogram = True
 
@@ -53,7 +52,7 @@ def computeDistance(track, detection, frame_i):
         d = d / ORIGINAL_WIDTH
         total_d = d * 0.7 + hist_d * 0.3
     else:
-        total_d = d
+        total_d = d / ORIGINAL_WIDTH
     return total_d
 
 def computeBestMatch(tracks, detections, frame_i):
@@ -76,17 +75,22 @@ def computeReid(tracks, det):
     for t in tracks:
         last_track_detect = t['bboxs'][-1]
         d = computePointsDistance(last_track_detect['x_center'], last_track_detect['y_center'], det['x_center'], det['y_center'])
-        hist_track = last_track_detect['hist']
-        hist_detect = det['hist']
-        hist_d = 1 - hist.compareHists(hist_track, hist_detect)
-        # balance 2 factors
-        # normalize the values to make them comparable (rescale everything into [0,1])
-        d = d / ORIGINAL_WIDTH
-        distance = d * 0.15 + hist_d * 0.85
-        if distance < best_distance:
-            best_distance = distance
-            best_track = t
-            best_detection = d
+        if use_color_histogram:
+            hist_track = last_track_detect['hist']
+            hist_detect = det['hist']
+            hist_d = 1 - hist.compareHists(hist_track, hist_detect)
+            # balance 2 factors
+            # normalize the values to make them comparable (rescale everything into [0,1])
+            d = d / ORIGINAL_WIDTH
+            distance = d * 0.15 + hist_d * 0.85
+            if distance < best_distance:
+                best_distance = distance
+                best_track = t
+        else:
+            d = d / ORIGINAL_WIDTH
+            if d < best_distance:
+                best_distance = d
+                best_track = t
     return best_distance, best_track
 
 def track(detections):
@@ -169,3 +173,5 @@ if __name__ == '__main__':
 
     parsetTracks = utility.parseTracks(result)
     utility.showTracksOnImage(parsetTracks)
+    # save result to file
+    utility.outputTracks(result)

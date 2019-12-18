@@ -16,6 +16,7 @@ HEIGHT = 600
 WIDTH = 800
 # path of folder containing images
 folder_path = 'Video/img1/'
+output_file = 'bb_out.csv'
 
 
 def extractClassData(bb_ids, scores, bbs, selectedClass, minConfidence=0.5):
@@ -46,14 +47,12 @@ if __name__ == '__main__':
     for file in os.listdir(folder_path):
         im_paths.append(folder_path + file)
 
-    im_path = 'Video/img1/000001.jpg'
-
     #import Faster R-CNN pretrained on Pascal VOC with ResNet-50 as backbone
     network = model_zoo.get_model('faster_rcnn_resnet50_v1b_voc', pretrained=True)
     x_list, orig_img_list = data.transforms.presets.rcnn.load_test(im_paths)
 
     #output file
-    with open('bb_out.csv', mode='w') as output:
+    with open(output_file, mode='w') as output:
         out_writer = csv.writer(output, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         #frame counter
         frameCounter = 0
