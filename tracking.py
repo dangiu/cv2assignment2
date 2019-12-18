@@ -8,9 +8,13 @@ import os
 import cv2 as cv
 
 # parameters
+ORIGINAL_HEIGHT = 576
+ORIGINAL_WIDTH = 768
+
 input_file = 'bb_out.csv'
 names = ['frame', 'bbox', 'left', 'top', 'width', 'height']
 max_distance_thresh = 200
+max_reid_thresh = 200
 track_age_thresh = 16
 min_track_len = 14
 use_color_histogram = True
@@ -37,16 +41,16 @@ def computePointsDistance(x1, y1, x2, y2):
 
 def computeDistance(track, detection, frame_i):
     last_track_detect = track['bboxs'][-1]
-    # d = computePointsDistance(last_track_detect[-2], last_track_detect[-1], detection[-2], detection[-1])
     d = computePointsDistance(last_track_detect['x_center'], last_track_detect['y_center'], detection['x_center'], detection['y_center'])
 
     if(use_color_histogram):
-        hist_track = track['hist']
+        hist_track = last_track_detect['hist']
         hist_detect = detection['hist']
         hist_d = 1 - hist.compareHists(hist_track, hist_detect)
-        # normalize d and hist_d to make them comparable
-
-        total_d = d * 0.25 + hist_d * 0.75
+        # balance 2 factors
+        # normalize the values to make them comparable (rescale everything into [0,1])
+        d = d / ORIGINAL_WIDTH
+        total_d = d * 0.5 + hist_d * 0.5
     else:
         total_d = d
     return total_d
@@ -62,8 +66,27 @@ def computeBestMatch(tracks, detections, frame_i):
                 best_distance = distance
                 best_track = t
                 best_detection = d
+    print(best_distance)
     return best_distance, best_track, best_detection
+'''
+def computeReid(tracks, detections):
+    best_distance = float('inf')
+    best_track = None
+    for t in tracks:
+        last_track_detect = t['bboxs'][-1]
+        d = computePointsDistance(last_track_detect['x_center'], last_track_detect['y_center'], d['x_center'], d['y_center'])
+        hist_track = t['hist']
+        hist_detect = d['hist']
+        hist_d = 1 - hist.compareHists(hist_track, hist_detect)
+        # balance 2 factors (might need to normalize them in order to make them comparable?)
+        distance = d * 0.25 + hist_d * 0.75
 
+        if distance < best_distance:
+            best_distance = distance
+            best_track = t
+            best_detection = d
+    return best_distance, best_track
+'''
 def track(detections):
     tracks = []
     stable_tracks = []
@@ -90,14 +113,22 @@ def track(detections):
         new_tracks = []
         for d in frame_detections:
             # try merge with existing track by means of reid
-            # if they are in the center of the image is more probable that they belong to already tracked object
-            # TODO IMPLEMENT
-            # otherwise create new track
-            if use_color_histogram:
-                t = {'started_on': frame, 'last_updated_on': frame, 'bboxs': [d], 'hist': d['hist']}
+            # distance, t = computeReid(tracks, d)
+            if False: #DEBUGGING PURPOSES
+            #if distance <= max_reid_thresh:
+                no_match = True
+                # add detection to track (best match pair)
+                t['bboxs'].append(d)
+                t['last_updated_on'] = frame
+                updated_tracks.append(t)
+                # remove t and d from available tracks and detection
+                del tracks[tracks.index(t)]
+                del frame_detections[frame_detections.index(d)]
+                # CONSIDERATION if they are in the center of the image is more probable that they belong to already tracked object
             else:
+                # otherwise create new track
                 t = {'started_on': frame, 'last_updated_on': frame, 'bboxs': [d]}
-            new_tracks.append(t)
+                new_tracks.append(t)
         # check for stable tracks
         for t in tracks:
             if (frame - t['last_updated_on']) > track_age_thresh:
