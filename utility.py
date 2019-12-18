@@ -17,12 +17,12 @@ def parseTracks(tracks):
     for t in tracks:
         for bbox in t['bboxs']:
             #frame, id, minx, miny, maxx, maxy
-            frame_n.append(bbox[0])
+            frame_n.append(bbox['frame'])
             id.append(tracks.index(t))
-            minx.append(bbox[1])
-            miny.append(bbox[2])
-            maxx.append(bbox[1] + bbox[3])
-            maxy.append(bbox[2] + bbox[4])
+            minx.append(bbox['left'])
+            miny.append(bbox['top'])
+            maxx.append(bbox['left'] + bbox['width'])
+            maxy.append(bbox['top'] + bbox['height'])
     d = {'frame': frame_n, 'id': id, 'minx': minx, 'miny': miny, 'maxx': maxx, 'maxy': maxy}
     df = pd.DataFrame(data=d)
     return df
@@ -31,7 +31,7 @@ def getRectByFrameAndParsedTracks(frame_index, parsedTracks):
     return parsedTracks.loc[parsedTracks['frame'] == frame_index]
 
 
-def showTracksOnImage(parsedTracks, frames):
+def showTracksOnImage(parsedTracks):
     # generate color for each id
     ids = parsedTracks.id.unique()
     colors = {}
@@ -51,14 +51,46 @@ def showTracksOnImage(parsedTracks, frames):
             exit(0)
         rows = getRectByFrameAndParsedTracks(frame_i, parsedTracks)
         for index, row in rows.iterrows():
-            # color = (rng.randint(0, 256), rng.randint(0, 256), rng.randint(0, 256))
-            # color = ((int(row['id']*17)%256), int( (row['id']*2)%256), int((row['id']*7)%256))
-            # src = cv.rectangle(frame, (int(row['minx']), int(row['miny'])), (int(row['maxx']), int(row['maxy'])), color, 2)
             src = cv.rectangle(frame, (int(row['minx']), int(row['miny'])), (int(row['maxx']), int(row['maxy'])), colors[int(row['id'])], 2)
-
 
         cv.imshow('frame', frame)
         cv.waitKey(10)
 
+def outputDetections():
+    """
+    Create description.txt for delivery
+    :return:
+    """
+    input_file = 'bb_out.csv'
+    names = ['frame', 'bbox', 'left', 'top', 'width', 'height']
+    bb_data = pd.read_csv(input_file, header=None, names=names)
+    # pre-process bounding box data
+    bb_data['frame'] = bb_data['frame'] + 1  # shift frames to align with ground truth data
+    bb_data = bb_data.drop(['bbox'], 1)
+    bb_data.to_csv('detection.txt', header=False, index=False)
+
+def outputTracks(tracks):
+    """
+        Create tracking.txt for delivery by passing computed tracks (unparsed)
+        :return:
+    """
+    # parse tracks
+    frame_n = []
+    id = []
+    x_center = []
+    y_center = []
+    for t in tracks:
+        for bbox in t['bboxs']:
+            # frame, id, minx, miny, maxx, maxy
+            frame_n.append(bbox['frame'])
+            id.append(tracks.index(t))
+            x_center.append(bbox['left'] + (bbox['width'] / 2))
+            y_center.append(bbox['top'] + (bbox['height'] / 2))
+    d = {'frame': frame_n, 'id': id, 'x_center': x_center, 'y_center': y_center}
+    df = pd.DataFrame(data=d)
+    df = df.sort_values(by=['frame'])
+    # output to csv
+    df.to_csv('tracking.txt', header=False, index=False)
+
 if __name__ == '__main__':
-    showTracksOnImage(None, None)
+    outputDetections()
