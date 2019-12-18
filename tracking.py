@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import gluoncv
 import math
-import plotUtil
+import utility
 import histograms as hist
 import os
 import cv2 as cv
@@ -13,8 +13,9 @@ ORIGINAL_WIDTH = 768
 
 input_file = 'bb_out.csv'
 names = ['frame', 'bbox', 'left', 'top', 'width', 'height']
-max_distance_thresh = 200
-max_reid_thresh = 200
+max_distance_thresh = 0.04
+max_reid_thresh = 0.7
+# 0.05 and 0.5 best after commit
 track_age_thresh = 16
 min_track_len = 14
 use_color_histogram = True
@@ -50,7 +51,7 @@ def computeDistance(track, detection, frame_i):
         # balance 2 factors
         # normalize the values to make them comparable (rescale everything into [0,1])
         d = d / ORIGINAL_WIDTH
-        total_d = d * 0.5 + hist_d * 0.5
+        total_d = d * 0.7 + hist_d * 0.3
     else:
         total_d = d
     return total_d
@@ -66,27 +67,28 @@ def computeBestMatch(tracks, detections, frame_i):
                 best_distance = distance
                 best_track = t
                 best_detection = d
-    print(best_distance)
+    # print(best_distance)
     return best_distance, best_track, best_detection
-'''
-def computeReid(tracks, detections):
+
+def computeReid(tracks, det):
     best_distance = float('inf')
     best_track = None
     for t in tracks:
         last_track_detect = t['bboxs'][-1]
-        d = computePointsDistance(last_track_detect['x_center'], last_track_detect['y_center'], d['x_center'], d['y_center'])
-        hist_track = t['hist']
-        hist_detect = d['hist']
+        d = computePointsDistance(last_track_detect['x_center'], last_track_detect['y_center'], det['x_center'], det['y_center'])
+        hist_track = last_track_detect['hist']
+        hist_detect = det['hist']
         hist_d = 1 - hist.compareHists(hist_track, hist_detect)
-        # balance 2 factors (might need to normalize them in order to make them comparable?)
-        distance = d * 0.25 + hist_d * 0.75
-
+        # balance 2 factors
+        # normalize the values to make them comparable (rescale everything into [0,1])
+        d = d / ORIGINAL_WIDTH
+        distance = d * 0.15 + hist_d * 0.85
         if distance < best_distance:
             best_distance = distance
             best_track = t
             best_detection = d
     return best_distance, best_track
-'''
+
 def track(detections):
     tracks = []
     stable_tracks = []
@@ -113,10 +115,8 @@ def track(detections):
         new_tracks = []
         for d in frame_detections:
             # try merge with existing track by means of reid
-            # distance, t = computeReid(tracks, d)
-            if False: #DEBUGGING PURPOSES
-            #if distance <= max_reid_thresh:
-                no_match = True
+            distance, t = computeReid(tracks, d)
+            if distance <= max_reid_thresh:
                 # add detection to track (best match pair)
                 t['bboxs'].append(d)
                 t['last_updated_on'] = frame
@@ -153,20 +153,11 @@ if __name__ == '__main__':
     bb_data['frame'] = bb_data['frame'] + 1     # shift frames to align with ground truth data
     bb_data['x_center'] = bb_data['left'] + (bb_data['width'] / 2)      # compute x of bb centroid
     bb_data['y_center'] = bb_data['top'] + (bb_data['height'] / 2)      # compute y of bb centroid
-    # add histograms to 6 rows
 
+    # add histogram to rows
     if use_color_histogram:
         bb_data['hist'] = bb_data.apply(lambda row: hist.computeHistogram(row[0], row), axis=1)
-    '''
-    # TODO make check in order to load correct data if exists, otherwise compute it
-    bb_data = pd.read_csv('bb_with_hist.csv')
 
-    # res = hist.computeHistogram(1, getDetectionsByFrame(bb_data, 1)[0])
-    # res2 = hist.computeHistogram(3, getDetectionsByFrame(bb_data, 3)[2])
-
-
-    # print(hist.compareHists(res, res2))
-    '''
     result = track(bb_data)
 
     avgTrackLen = 0
@@ -176,5 +167,5 @@ if __name__ == '__main__':
     print('Num Track: ' + str(len(result)))
     print('Avg Track Len: ' + str(avgTrackLen))
 
-    parsetTracks = plotUtil.parseTracks(result)
-    plotUtil.showTracksOnImage(parsetTracks)
+    parsetTracks = utility.parseTracks(result)
+    utility.showTracksOnImage(parsetTracks)

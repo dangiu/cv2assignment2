@@ -7,13 +7,15 @@ from PIL import Image
 import csv
 import os
 
-# Configuration parameters
+# PARAMETERS
 # original dimensions
 ORIGINAL_HEIGHT = 576
 ORIGINAL_WIDTH = 768
 # imported dimensions
 HEIGHT = 600
 WIDTH = 800
+# path of folder containing images
+folder_path = 'Video/img1/'
 
 
 def extractClassData(bb_ids, scores, bbs, selectedClass, minConfidence=0.5):
@@ -38,11 +40,9 @@ def extractClassData(bb_ids, scores, bbs, selectedClass, minConfidence=0.5):
 
 
 if __name__ == '__main__':
-
     #image paths
     im_paths = []
 
-    folder_path = 'Video/img1/'
     for file in os.listdir(folder_path):
         im_paths.append(folder_path + file)
 
@@ -56,8 +56,7 @@ if __name__ == '__main__':
     with open('bb_out.csv', mode='w') as output:
         out_writer = csv.writer(output, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
         #frame counter
-        frameCounter = 0;
-
+        frameCounter = 0
         for x in x_list:
             box_ids, scores, bboxes = network(x)
             p_box_ids, p_scores, p_bboxes = extractClassData(box_ids, scores, bboxes, 'person', minConfidence=0.5)
