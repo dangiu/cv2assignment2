@@ -56,6 +56,47 @@ def showTracksOnImage(parsedTracks):
         cv.imshow('frame', frame)
         cv.waitKey(10)
 
+def showTracksAndBoxes(tracks):
+    # t = {'started_on': frame, 'last_updated_on': frame, 'bboxs': [d]}
+
+    # generate color for each track
+    for t in tracks:
+        t['color'] = (rng.randint(0, 256), rng.randint(0, 256), rng.randint(0, 256))
+
+    image_paths = []
+    frameIndex = 1
+    for file in os.listdir(image_folder_path):
+        image_paths.append((frameIndex, image_folder_path + file))
+        frameIndex += 1
+
+    for frame_i, frame_path in image_paths:
+        frame = cv.imread(frame_path)
+        if frame is None:
+            print('Could not open or find the image: ' + frame_path)
+            exit(0)
+        for t in tracks:
+            if t['started_on'] <= frame_i and t['last_updated_on'] >= frame_i:   # check if track is active
+                # display segment for each 2 bb + bb of current frame (if exist)
+                prevBB = None
+                for b in t['bboxs']:
+                    if b['frame'] <= frame_i:
+                        if b['frame'] == frame_i:
+                            # display bbox
+                            #frame, left, top, width, height, x_center, y_center, hist
+                            minx = int(b['left'])
+                            miny = int(b['top'])
+                            maxx = int(b['left'] + b['width'])
+                            maxy = int(b['top'] + b['height'])
+                            cv.rectangle(frame, (minx, miny), (maxx, maxy), t['color'], 2)
+                        if prevBB is not None:
+                            # display segment between prevBB and b
+                            cv.line(frame, (int(prevBB['x_center']), int(prevBB['y_center'])), (int(b['x_center']), int(b['y_center'])), t['color'], thickness=2, lineType=8, shift=0)
+                        prevBB = b
+                    else:
+                        break
+        cv.imshow('frame', frame)
+        cv.waitKey(10)
+
 def outputDetections():
     """
     Create description.txt for delivery
