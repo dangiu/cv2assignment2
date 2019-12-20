@@ -156,4 +156,3 @@ def plotDetection(frame_index, bb_file_name):
 
 if __name__ == '__main__':
     outputDetections()
-    #plotDetection(20, 'bb_out.csv')
