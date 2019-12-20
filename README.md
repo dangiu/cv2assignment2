@@ -1,5 +1,5 @@
 # Object Detection and Tracking in Practice
-I succest reading this file from the Github repository [cv2assignment2](https://github.com/daniele122008/cv2assignment2) where is formatted and displayed correctly.
+I suggest reading this file from the Github repository [cv2assignment2](https://github.com/daniele122008/cv2assignment2) where is formatted and displayed correctly.
 ### Demo
 A demo of the implementation can be found [here](https://www.insert.real.link)
 ### Repository Organization
