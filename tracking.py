@@ -172,6 +172,10 @@ if __name__ == '__main__':
     print('Avg Track Len: ' + str(avgTrackLen))
 
     parsetTracks = utility.parseTracks(result)
-    utility.showTracksOnImage(parsetTracks)
+    #utility.showTracksOnImage(parsetTracks)
+    utility.showTracksAndBoxes(result)
     # save result to file
-    utility.outputTracks(result)
+    #utility.outputTracks(result)
+
+# TODO SOLVE PROBLEM OF JUMPING TRACKS FROM ONE POINT TO THE OPPOSITE!
+# TODO PROBABLY GIVEN FROM REID THAT DOES NOT WEIGHT DISTANCE ENOUGH BUT CONSIDERS ONLY HIST
