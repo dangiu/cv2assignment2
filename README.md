@@ -53,19 +53,14 @@ The CSV file has the following columns:
 6. Bounding box height.
 
 
-##### Note:
-In order to create the output file `detection.txt` needed for the delivery, there is another script. The script `detection.py` does not generate the actual output file, due to the fact that initially it was done this way and reperforming all the detections just to change the output format of the file is too time consuming, given the unavailability of powerful hardware,
-
-
-#### Generate detection.txt
-In order to generate the output file `detection.txt` required for the delivery, execute the script `utility.py`. The ouput file will be generated in the root folder.
-
+##### Generate detection.txt
+In order to generate the output file `detection.txt` required for the delivery, execute the script `utility.py`. The ouput file will be generated in the root folder. The script `detection.py` does not generate the actual output file, due to the fact that initially it was done this way and reperforming all the detections just to change the output format of the file is too time consuming, given the unavailability of powerful hardware.
 
 #### Perform Tracking
 In order to perform different types of tracking and visualize the result on screen, multiple options are available:
 1. To perform IOU-based tracking, execute the script `iou-tracking.py`.
 2. To perform centroid-based tracking, execute the script `tracking.py`. 
-3. To perform centroid-based tracking with the reidentification model based on color histograms, execute the script `tracking.py` while making sure that the attribute `use_color_histogram` is set to `True`. While running in this mode, around 30-40 seconds can before any output is visualized, because the color histograms for all the bounding boxes must be computed before initializing the tracking process.
+3. To perform centroid-based tracking with the reidentification model based on color histograms, execute the script `tracking.py` while making sure that the attribute `use_color_histogram` is set to `True`. While running in this mode, around 30-40 seconds can elapse before any output is visualized, because the color histograms for all the bounding boxes must be computed before initializing the tracking process.
 
 #### Generate tracking.txt
 Using options 2 and 3 of the tracking methods, is possible to generate the output file `tracking.txt` required for the delivery by ensuring that the attribute `save_to_file` is set to `True`. The output file will be generated in the root folder.
