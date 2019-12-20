@@ -58,10 +58,11 @@ def track(detections, minIOU=0.5,minLen=2):
             if len(tracksUpdated) == 0 or ta is not tracksUpdated[-1]:
                 # if track was not updated finish track when the conditions are met
                 if len(ta['bboxs']) >= minLen:
+                    ta['last_updated_on'] = frame
                     tracksFinished.append(ta)
 
         # create new tracks
-        tracksNew = [{'bboxs': [det], 'start_frame': frame} for det in frameDetect]
+        tracksNew = [{'bboxs': [det], 'started_on': frame} for det in frameDetect]
         tracksActive = tracksUpdated + tracksNew
 
     # finish all remaining active tracks that meet conditions
@@ -85,4 +86,3 @@ if __name__ == '__main__':
 
     ft = utility.parseTracks(finished_tracks)
     utility.showTracksOnImage(ft)
-

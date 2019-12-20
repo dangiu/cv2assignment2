@@ -1,11 +1,7 @@
 import pandas as pd
-import numpy as np
-import gluoncv
 import math
 import utility
 import histograms as hist
-import os
-import cv2 as cv
 
 # parameters
 ORIGINAL_HEIGHT = 576
@@ -20,8 +16,7 @@ min_track_len = 14
 use_color_histogram = True
 
 image_folder_path = 'Video/img1/'
-
-output_name = 'tracking.csv'
+save_to_file = False
 
 def getDetectionsByFrame(detections, frame_index):
     """
@@ -174,8 +169,6 @@ if __name__ == '__main__':
     parsetTracks = utility.parseTracks(result)
     #utility.showTracksOnImage(parsetTracks)
     utility.showTracksAndBoxes(result)
-    # save result to file
-    #utility.outputTracks(result)
-
-# TODO SOLVE PROBLEM OF JUMPING TRACKS FROM ONE POINT TO THE OPPOSITE!
-# TODO PROBABLY GIVEN FROM REID THAT DOES NOT WEIGHT DISTANCE ENOUGH BUT CONSIDERS ONLY HIST
+    # save result to file if necessary
+    if save_to_file:
+        utility.outputTracks(result)
