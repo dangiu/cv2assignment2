@@ -133,5 +133,28 @@ def outputTracks(tracks):
     # output to csv
     df.to_csv('tracking.txt', header=False, index=False)
 
+def plotDetection(frame_index, bb_file_name):
+    file_index = frame_index - 1
+    file = os.listdir(image_folder_path)[file_index]
+    names = ['frame', 'bbox', 'left', 'top', 'width', 'height']
+    bb_data = pd.read_csv(bb_file_name, header=None, names=names)
+    # extract data of relevant frame
+    bb_data = bb_data.loc[bb_data['frame'] == frame_index]
+    # pre-process bounding box data
+    bb_data['frame'] = bb_data['frame'] + 1  # shift frames to align with ground truth data
+    bb_data['x_center'] = bb_data['left'] + (bb_data['width'] / 2)  # compute x of bb centroid
+    bb_data['y_center'] = bb_data['top'] + (bb_data['height'] / 2)  # compute y of bb centroid
+    bb_data['right'] = bb_data['left'] + bb_data['width']
+    bb_data['bottom'] = bb_data['top'] + bb_data['height']
+    # read frame
+    frame = cv.imread(image_folder_path + "/" + file)
+    # plot bb onto frame
+    for index, row in bb_data.iterrows():
+        src = cv.rectangle(frame, (int(row['left']), int(row['top'])), (int(row['right']), int(row['bottom'])),
+                           (0, 0, 255), 2)
+    cv.imshow('frame', frame)
+    cv.waitKey(0)
+
 if __name__ == '__main__':
     outputDetections()
+    #plotDetection(20, 'bb_out.csv')
