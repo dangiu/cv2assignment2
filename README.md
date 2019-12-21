@@ -1,7 +1,7 @@
 # Object Detection and Tracking in Practice
 I suggest reading this file from the Github repository [cv2assignment2](https://github.com/daniele122008/cv2assignment2) where is formatted and displayed correctly.
 ### Demo
-A demo of the implementation can be found [here](https://www.insert.real.link)
+A demo of the implementation can be found [here](https://drive.google.com/file/d/1dzz9wLGeHRYAbTfVUgLq5FORZrrtwGhW).
 ### Repository Organization
 The repository is organized as follow:
 ```
@@ -53,7 +53,7 @@ The CSV file has the following columns:
 6. Bounding box height.
 
 
-##### Generate detection.txt
+#### Generate detection.txt
 In order to generate the output file `detection.txt` required for the delivery, execute the script `utility.py`. The ouput file will be generated in the root folder. The script `detection.py` does not generate the actual output file, due to the fact that initially it was done this way and reperforming all the detections just to change the output format of the file is too time consuming, given the unavailability of powerful hardware.
 
 #### Perform Tracking
